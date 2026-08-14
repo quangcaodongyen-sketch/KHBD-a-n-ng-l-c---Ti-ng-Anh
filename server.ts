@@ -44,8 +44,12 @@ YÊU CẦU CỐT LÕI (BẮT BUỘC):
 4. TRỰC QUAN HÓA: Dùng ký hiệu [Hình ảnh: ...] để gợi ý giáo viên chèn slide/tranh.
 
 CẤU TRÚC ĐẦU RA BẮT BỘC (Dùng Markdown rõ ràng):
-# 📘 BẢN ĐỊNH HƯỚNG GIÁO ÁN ĐA NĂNG LỰC GLOBAL SUCCESS
-[Tên lớp / Unit / Lesson / Chủ đề]
+# BẢN ĐỊNH HƯỚNG KHBD ĐA NĂNG LỰC
+# GLOBAL SUCCESS
+
+**Lớp:** [Tên lớp, ví dụ: Grade 6]  
+**Unit [X]:** [Tên Unit, ví dụ: Unit 1: My New School]  
+**Lesson:** [Tên Lesson, ví dụ: Getting Started] / **Chủ đề:** [Tóm tắt chủ đề bài học, ví dụ: Giới thiệu về trường học mới, các môn học và đồ dùng học tập.]
 
 ## I. MỤC TIÊU BÀI HỌC (OBJECTIVES) & MA TRẬN PHÂN HÓA
 - Trọng tâm Kiến thức (Từ vựng, Ngữ pháp, Kỹ năng)
