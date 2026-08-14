@@ -29,35 +29,62 @@ export const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
   const [copiedWord, setCopiedWord] = useState<boolean>(false);
   const [copiedText, setCopiedText] = useState<boolean>(false);
 
-  // Copy HTML for Microsoft Word paste
+  // Helper to format HTML for Word export (Ensures metadata lines don't get paragraph indent)
+  const formatHtmlForWord = (rawHtml: string) => {
+    return rawHtml
+      .replace(/<p>(\s*<strong>(Lớp|Unit|Lesson|Khối|Bộ sách|Chủ đề):)/gi, '<p style="text-indent: 0; margin-bottom: 3pt; font-size: 13pt;">$1')
+      .replace(/<p>(\s*<em>(Lớp|Unit|Lesson|Khối|Bộ sách|Chủ đề):)/gi, '<p style="text-indent: 0; margin-bottom: 3pt; font-size: 13pt;">$1');
+  };
+
+  // Copy HTML for Microsoft Word paste (Chuẩn Nghị định 30/2020: Times New Roman 13pt, thụt lề 1.27cm, căn lề chuẩn)
   const handleCopyForWord = async () => {
     try {
       const container = document.getElementById('directive-markdown-content');
       if (!container) return;
 
+      const formattedBody = formatHtmlForWord(container.innerHTML);
+
       const htmlContent = `
         <!DOCTYPE html>
-        <html>
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head>
           <meta charset="utf-8">
+          <!--[if gte mso 9]>
+          <xml>
+            <w:WordDocument>
+              <w:View>Print</w:View>
+              <w:Zoom>100</w:Zoom>
+              <w:DoNotOptimizeForBrowser/>
+            </w:WordDocument>
+          </xml>
+          <![endif]-->
           <style>
-            body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.4; color: #111; }
-            h1 { font-size: 18pt; color: #0f766e; border-bottom: 2px solid #0f766e; padding-bottom: 4px; }
-            h2 { font-size: 15pt; color: #115e59; margin-top: 18px; background: #f0fdfa; padding: 6px; }
-            h3 { font-size: 13pt; color: #1e293b; }
-            table { border-collapse: collapse; width: 100%; margin: 12px 0; }
-            th, td { border: 1px solid #94a3b8; padding: 8px 10px; text-align: left; vertical-align: top; }
-            th { background-color: #e2e8f0; font-weight: bold; color: #0f172a; }
-            ul, ol { margin-left: 20px; }
-            li { margin-bottom: 4px; }
-            blockquote { color: #1e3a8a; font-weight: bold; background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 10px 15px; margin: 15px 0; font-style: normal; }
-            .badge-low { color: #047857; font-weight: bold; }
-            .badge-mid { color: #1d4ed8; font-weight: bold; }
-            .badge-high { color: #b45309; font-weight: bold; }
+            @page Section1 {
+              size: 210mm 297mm;
+              margin: 20mm 15mm 20mm 30mm;
+              mso-header-margin: 36pt;
+              mso-footer-margin: 36pt;
+            }
+            div.Section1 { page: Section1; }
+            body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.4; color: #000; }
+            p { text-indent: 1.27cm; text-align: justify; margin-top: 0; margin-bottom: 6pt; line-height: 1.4; }
+            h1 { font-size: 14pt; font-weight: bold; text-align: center; text-indent: 0; margin-top: 8pt; margin-bottom: 4pt; color: #000; text-transform: uppercase; }
+            h2 { font-size: 13.5pt; font-weight: bold; text-indent: 0; margin-top: 10pt; margin-bottom: 5pt; color: #000; }
+            h3 { font-size: 13pt; font-weight: bold; text-indent: 0; margin-top: 8pt; margin-bottom: 4pt; color: #000; }
+            table { border-collapse: collapse; width: 100%; margin: 10pt 0; }
+            th, td { border: 1px solid #000; padding: 5pt 7pt; font-size: 13pt; text-align: left; vertical-align: top; line-height: 1.3; text-indent: 0; }
+            th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+            td p, th p { text-indent: 0; margin: 0; }
+            ul, ol { margin-top: 0; margin-bottom: 6pt; padding-left: 24pt; }
+            li { text-indent: 0; line-height: 1.4; text-align: justify; margin-bottom: 3pt; }
+            blockquote { color: #1e3a8a; font-weight: bold; background: #eff6ff; border-left: 3pt solid #1d4ed8; padding: 8pt 12pt; margin: 10pt 0; font-style: normal; }
+            blockquote p { text-indent: 0; margin-bottom: 4pt; }
           </style>
         </head>
         <body>
-          ${container.innerHTML}
+          <div class="Section1">
+            ${formattedBody}
+          </div>
         </body>
         </html>
       `;
@@ -90,12 +117,52 @@ export const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
   };
 
   const handleDownloadDoc = () => {
-    const htmlHeader = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Giáo án Global Success</title><style>body { font-family: 'Times New Roman', serif; font-size: 14pt; line-height: 1.5; text-align: justify; } h1 { font-size: 16pt; text-align: center; } h2 { font-size: 15pt; } table { border-collapse: collapse; width: 100%; margin: 12px 0; } th, td { border: 1px solid #000; padding: 6px; vertical-align: top; } blockquote { color: #1e3a8a; font-weight: bold; background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 10px 15px; margin: 15px 0; font-style: normal; }</style></head><body>";
-    const htmlFooter = "</body></html>";
+    const htmlHeader = `
+      <html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+      <head>
+        <meta charset='utf-8'>
+        <title>Giáo án Global Success</title>
+        <!--[if gte mso 9]>
+        <xml>
+          <w:WordDocument>
+            <w:View>Print</w:View>
+            <w:Zoom>100</w:Zoom>
+            <w:DoNotOptimizeForBrowser/>
+          </w:WordDocument>
+        </xml>
+        <![endif]-->
+        <style>
+          @page Section1 {
+            size: 210mm 297mm;
+            margin: 20mm 15mm 20mm 30mm;
+            mso-header-margin: 36pt;
+            mso-footer-margin: 36pt;
+          }
+          div.Section1 { page: Section1; }
+          body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; line-height: 1.4; color: #000; }
+          p { text-indent: 1.27cm; text-align: justify; margin-top: 0; margin-bottom: 6pt; line-height: 1.4; }
+          h1 { font-size: 14pt; font-weight: bold; text-align: center; text-indent: 0; margin-top: 8pt; margin-bottom: 4pt; color: #000; text-transform: uppercase; }
+          h2 { font-size: 13.5pt; font-weight: bold; text-indent: 0; margin-top: 10pt; margin-bottom: 5pt; color: #000; }
+          h3 { font-size: 13pt; font-weight: bold; text-indent: 0; margin-top: 8pt; margin-bottom: 4pt; color: #000; }
+          table { border-collapse: collapse; width: 100%; margin: 10pt 0; }
+          th, td { border: 1px solid #000; padding: 5pt 7pt; font-size: 13pt; text-align: left; vertical-align: top; line-height: 1.3; text-indent: 0; }
+          th { background-color: #f2f2f2; font-weight: bold; text-align: center; }
+          td p, th p { text-indent: 0; margin: 0; }
+          ul, ol { margin-top: 0; margin-bottom: 6pt; padding-left: 24pt; }
+          li { text-indent: 0; line-height: 1.4; text-align: justify; margin-bottom: 3pt; }
+          blockquote { color: #1e3a8a; font-weight: bold; background: #eff6ff; border-left: 3pt solid #1d4ed8; padding: 8pt 12pt; margin: 10pt 0; font-style: normal; }
+          blockquote p { text-indent: 0; margin-bottom: 4pt; }
+        </style>
+      </head>
+      <body>
+        <div class="Section1">
+    `;
+    const htmlFooter = "</div></body></html>";
     const container = document.getElementById('directive-markdown-content');
     if (!container) return;
 
-    const sourceHTML = htmlHeader + container.innerHTML + htmlFooter;
+    const formattedBody = formatHtmlForWord(container.innerHTML);
+    const sourceHTML = htmlHeader + formattedBody + htmlFooter;
     const blob = new Blob(['\ufeff', sourceHTML], {
       type: 'application/msword',
     });
@@ -103,7 +170,7 @@ export const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${title.replace(/[^a-zA-Z0-9]/g, '_')}_Dinh_Huong_Giao_An.doc`;
+    a.download = `${title.replace(/[^a-zA-Z0-9]/g, '_')}_Dinh_Huong_KHBD.doc`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

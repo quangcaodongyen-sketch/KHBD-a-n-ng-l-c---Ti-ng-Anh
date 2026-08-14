@@ -90,6 +90,9 @@ export default function App() {
       const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
       if (storedApiKey) {
         setApiKey(storedApiKey);
+      } else {
+        // First-time visit: Automatically open onboarding modal to guide the user
+        setIsApiModalOpen(true);
       }
     } catch (e) {
       console.error('Failed to load from localStorage', e);
