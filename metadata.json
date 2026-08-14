@@ -1,0 +1,6 @@
+{
+  "name": "Global Success AI - Trợ lý Giáo án Đa năng lực",
+  "description": "Trợ lý AI hỗ trợ phân tích, thiết kế và định hướng giáo án phân hóa đa năng lực cho môn Tiếng Anh THCS bộ sách Global Success (Lớp 6 - 9).",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
