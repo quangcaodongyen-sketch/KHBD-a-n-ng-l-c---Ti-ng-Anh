@@ -114,6 +114,19 @@ export default function App() {
     }
   };
 
+  // Helper to safely parse JSON or extract text error
+  const parseResponse = async (res: Response) => {
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch {
+      if (!res.ok) {
+        throw new Error(`Máy chủ gặp sự cố (Mã lỗi ${res.status}). Vui lòng kiểm tra lại API Key hoặc thử lại.`);
+      }
+      throw new Error('Phản hồi từ máy chủ không đúng định dạng JSON.');
+    }
+  };
+
   // Mode 2 Submit
   const handleQuickSelectSubmit = async (payload: QuickSelectionPayload) => {
     setIsLoading(true);
@@ -137,7 +150,7 @@ export default function App() {
         }),
       });
 
-      const data = await res.json();
+      const data = await parseResponse(res);
       if (!res.ok) {
         throw new Error(data.error || 'Lỗi khi kết nối với máy chủ AI.');
       }
@@ -178,7 +191,7 @@ export default function App() {
         }),
       });
 
-      const data = await res.json();
+      const data = await parseResponse(res);
       if (!res.ok) {
         throw new Error(data.error || 'Lỗi khi kết nối với máy chủ AI.');
       }
