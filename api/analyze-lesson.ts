@@ -60,6 +60,70 @@ Trình bày dưới dạng Markdown Table hoặc danh sách điền khuyết đ�
 - Bảng kiểm đánh giá nhanh (Formative Assessment Rubric).
 `;
 
+const CANDIDATE_MODELS = [
+  'gemini-2.5-flash',
+  'gemini-2.0-flash',
+  'gemini-2.5-pro',
+  'gemini-2.0-pro-exp-02-05',
+  'gemini-1.5-flash-latest',
+  'gemini-1.5-pro-latest',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+];
+
+async function generateWithFallback(ai: any, prompt: string, temperature: number) {
+  let lastErr: any = null;
+
+  for (const modelName of CANDIDATE_MODELS) {
+    try {
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          temperature,
+        },
+      });
+
+      if (response && response.text) {
+        return response.text;
+      }
+    } catch (err: any) {
+      console.warn(`Thử model ${modelName} không thành công:`, err?.message || err);
+      lastErr = err;
+    }
+  }
+
+  // Fallback: Query list of models dynamically from user's account
+  try {
+    const list = await ai.models.list();
+    for await (const m of list) {
+      const modelId = m.name?.replace(/^models\//, '') || '';
+      if (modelId && !CANDIDATE_MODELS.includes(modelId)) {
+        try {
+          const response = await ai.models.generateContent({
+            model: modelId,
+            contents: prompt,
+            config: {
+              systemInstruction: SYSTEM_INSTRUCTION,
+              temperature,
+            },
+          });
+          if (response && response.text) {
+            return response.text;
+          }
+        } catch (inner) {
+          console.warn(`Thử dynamic model ${modelId} thất bại:`, inner);
+        }
+      }
+    }
+  } catch (listError) {
+    console.warn('Không thể lấy danh sách model:', listError);
+  }
+
+  throw lastErr || new Error('Không thể kết nối với các model Gemini hiện hành.');
+}
+
 export const maxDuration = 60; // Set timeout limit to 60s for Vercel
 
 export default async function handler(req: any, res: any) {
@@ -112,29 +176,12 @@ ${uploadData.rawContent}
 4. KHÔNG XUẤT RA BẤT KỲ ĐOẠN NHẬN XÉT HAY LỜI MỞ ĐẦU NÀO KHÁC. Chỉ cần xuất trực tiếp giáo án.
 `;
 
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: 'gemini-1.5-pro',
-        contents: prompt,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: principlesConfig?.temperature ?? 0.7,
-        },
-      });
-    } catch (modelErr: any) {
-      console.warn('Fallback to gemini-1.5-flash:', modelErr);
-      response = await ai.models.generateContent({
-        model: 'gemini-1.5-flash',
-        contents: prompt,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          temperature: principlesConfig?.temperature ?? 0.7,
-        },
-      });
-    }
+    const outputText = await generateWithFallback(
+      ai,
+      prompt,
+      principlesConfig?.temperature ?? 0.7
+    );
 
-    const outputText = response.text || 'Không nhận được phản hồi từ AI.';
     return res.status(200).json({ result: outputText });
   } catch (error: any) {
     console.error('Error analyzing lesson:', error);
