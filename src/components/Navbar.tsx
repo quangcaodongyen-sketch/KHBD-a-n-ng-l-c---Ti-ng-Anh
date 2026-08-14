@@ -1,9 +1,10 @@
 import React from 'react';
-import { GraduationCap, BookOpen, Sparkles, History, HelpCircle, Moon, Sun } from 'lucide-react';
+import { GraduationCap, BookOpen, Sparkles, History, HelpCircle, Moon, Sun, Key } from 'lucide-react';
 
 interface NavbarProps {
   onOpenTrainingModal: () => void;
   onOpenHistoryModal: () => void;
+  onOpenApiModal: () => void;
   savedCount: number;
   isDarkMode?: boolean;
   toggleDarkMode?: () => void;
@@ -12,6 +13,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenTrainingModal,
   onOpenHistoryModal,
+  onOpenApiModal,
   savedCount,
   isDarkMode,
   toggleDarkMode,
@@ -73,6 +75,14 @@ export const Navbar: React.FC<NavbarProps> = ({
               {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
           )}
+
+          <button
+            onClick={onOpenApiModal}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-primary-400 hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-700"
+            title="Cài đặt API Key"
+          >
+            <Key className="w-4 h-4" />
+          </button>
 
           <div className="hidden lg:flex items-center space-x-1 pl-2 border-l border-slate-800 text-xs text-slate-400">
             <Sparkles className="w-3.5 h-3.5 text-secondary-400" />

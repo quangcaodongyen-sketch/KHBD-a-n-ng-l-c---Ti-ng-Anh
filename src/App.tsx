@@ -13,6 +13,7 @@ import { PrinciplesChecklist } from './components/PrinciplesChecklist';
 import { DirectiveViewer } from './components/DirectiveViewer';
 import { TrainingPrinciplesModal } from './components/TrainingPrinciplesModal';
 import { SavedDirectivesModal } from './components/SavedDirectivesModal';
+import { ApiKeyModal } from './components/ApiKeyModal';
 import {
   FileText,
   BookOpen,
@@ -25,15 +26,16 @@ import {
 } from 'lucide-react';
 
 const LOCAL_STORAGE_KEY = 'global_success_saved_directives_v1';
+const API_KEY_STORAGE_KEY = 'global_success_api_key';
 
 export default function App() {
   const [activeMode, setActiveMode] = useState<GenerationMode>('select');
 
   // Principles Focus Configuration
   const [principlesConfig, setPrinciplesConfig] = useState<PrinciplesFocusConfig>({
-    generalDifferentiation: true,
-    threeTieredTasks: true,
-    quickDiagnostics: true,
+    generalDifferentiation: false,
+    threeTieredTasks: false,
+    quickDiagnostics: false,
     groupWorkAndFastFinishers: true,
     processAssessment: true,
     temperature: 0.7,
@@ -53,6 +55,10 @@ export default function App() {
   // Modals state
   const [isTrainingModalOpen, setIsTrainingModalOpen] = useState<boolean>(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState<boolean>(false);
+  const [isApiModalOpen, setIsApiModalOpen] = useState<boolean>(false);
+
+  // API Key state
+  const [apiKey, setApiKey] = useState<string>('');
 
   // Saved directives history in localStorage
   const [savedDirectives, setSavedDirectives] = useState<SavedDirective[]>([]);
@@ -81,10 +87,23 @@ export default function App() {
       if (stored) {
         setSavedDirectives(JSON.parse(stored));
       }
+      const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+      if (storedApiKey) {
+        setApiKey(storedApiKey);
+      }
     } catch (e) {
-      console.error('Failed to load saved directives from localStorage', e);
+      console.error('Failed to load from localStorage', e);
     }
   }, []);
+
+  const handleSaveApiKey = (key: string) => {
+    setApiKey(key);
+    try {
+      localStorage.setItem(API_KEY_STORAGE_KEY, key);
+    } catch (e) {
+      console.error('Failed to save API key to localStorage', e);
+    }
+  };
 
   const saveToLocalStorage = (list: SavedDirective[]) => {
     setSavedDirectives(list);
@@ -114,6 +133,7 @@ export default function App() {
         body: JSON.stringify({
           quickSelection: payload,
           principlesConfig,
+          customApiKey: apiKey,
         }),
       });
 
@@ -154,6 +174,7 @@ export default function App() {
         body: JSON.stringify({
           uploadData: payload,
           principlesConfig,
+          customApiKey: apiKey,
         }),
       });
 
@@ -245,6 +266,7 @@ export default function App() {
       <Navbar
         onOpenTrainingModal={() => setIsTrainingModalOpen(true)}
         onOpenHistoryModal={() => setIsHistoryModalOpen(true)}
+        onOpenApiModal={() => setIsApiModalOpen(true)}
         savedCount={savedDirectives.length}
         isDarkMode={isDarkMode}
         toggleDarkMode={() => setIsDarkMode(!isDarkMode)}
@@ -427,6 +449,13 @@ export default function App() {
         savedDirectives={savedDirectives}
         onSelectDirective={handleSelectFromHistory}
         onDeleteDirective={handleDeleteDirective}
+      />
+
+      <ApiKeyModal
+        isOpen={isApiModalOpen}
+        onClose={() => setIsApiModalOpen(false)}
+        currentApiKey={apiKey}
+        onSave={handleSaveApiKey}
       />
     </div>
   );

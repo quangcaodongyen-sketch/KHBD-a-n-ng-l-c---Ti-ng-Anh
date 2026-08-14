@@ -16,10 +16,10 @@ const PORT = 3000;
 app.use(express.json({ limit: '10mb' }));
 
 // Helper to initialize Gemini Client
-function getGeminiClient() {
-  const apiKey = process.env.GEMINI_API_KEY;
+function getGeminiClient(customApiKey?: string) {
+  const apiKey = customApiKey || process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error('Chưa cấu hình GEMINI_API_KEY trong hệ thống.');
+    throw new Error('Chưa cấu hình GEMINI_API_KEY trong hệ thống và không có API Key do người dùng cung cấp.');
   }
   return new GoogleGenAI({
     apiKey,
@@ -82,13 +82,13 @@ app.get('/api/health', (req, res) => {
 // Mode 2: Quick Selection Generation Endpoint
 app.post('/api/generate-lesson', async (req, res) => {
   try {
-    const { quickSelection, principlesConfig } = req.body;
+    const { quickSelection, principlesConfig, customApiKey } = req.body;
 
     if (!quickSelection || !quickSelection.grade || !quickSelection.unitNumber || !quickSelection.lessonType) {
       return res.status(400).json({ error: 'Thiếu thông tin lớp, unit hoặc bài học.' });
     }
 
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(customApiKey);
 
     const prompt = `
 Hãy soạn GIÁO ÁN PHÂN HÓA ĐA NĂNG LỰC "THỰC CHIẾN" cho bài học sau, CÓ ĐẦY ĐỦ KỊCH BẢN (SCRIPT) VÀ PHIẾU HỌC TẬP:
@@ -131,13 +131,13 @@ LƯU Ý CỰC KỲ QUAN TRỌNG:
 // Mode 1: Upload / Paste Lesson Analysis Endpoint
 app.post('/api/analyze-lesson', async (req, res) => {
   try {
-    const { uploadData, principlesConfig } = req.body;
+    const { uploadData, principlesConfig, customApiKey } = req.body;
 
     if (!uploadData || !uploadData.rawContent || uploadData.rawContent.trim().length === 0) {
       return res.status(400).json({ error: 'Nội dung giáo án tải lên hoặc dán bị trống.' });
     }
 
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(customApiKey);
 
     const prompt = `
 Người dùng đã tải lên/dán một GIÁO ÁN HIỆN CÓ như sau:

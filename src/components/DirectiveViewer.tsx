@@ -90,7 +90,7 @@ export const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
   };
 
   const handleDownloadDoc = () => {
-    const htmlHeader = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Giáo án Global Success</title><style>body { font-family: 'Times New Roman', serif; font-size: 12pt; } table { border-collapse: collapse; width: 100%; } th, td { border: 1px solid #000; padding: 6px; } blockquote { color: #1e3a8a; font-weight: bold; background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 10px 15px; margin: 15px 0; font-style: normal; }</style></head><body>";
+    const htmlHeader = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Giáo án Global Success</title><style>body { font-family: 'Times New Roman', serif; font-size: 14pt; line-height: 1.5; text-align: justify; } h1 { font-size: 16pt; text-align: center; } h2 { font-size: 15pt; } table { border-collapse: collapse; width: 100%; margin: 12px 0; } th, td { border: 1px solid #000; padding: 6px; vertical-align: top; } blockquote { color: #1e3a8a; font-weight: bold; background: #eff6ff; border-left: 4px solid #1d4ed8; padding: 10px 15px; margin: 15px 0; font-style: normal; }</style></head><body>";
     const htmlFooter = "</body></html>";
     const container = document.getElementById('directive-markdown-content');
     if (!container) return;
@@ -123,6 +123,9 @@ export const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
   const handlePrint = () => {
     window.print();
   };
+
+  // Convert HTML <br> tags to markdown newlines (two spaces + newline) to prevent ReactMarkdown from escaping them
+  const processedContent = content.replace(/<br\s*\/?>/gi, '  \n');
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
@@ -204,7 +207,7 @@ export const DirectiveViewer: React.FC<DirectiveViewerProps> = ({
           id="directive-markdown-content"
           className="prose prose-slate dark:prose-invert max-w-none prose-headings:font-bold prose-h1:text-xl sm:prose-h1:text-2xl prose-h1:text-primary-950 dark:prose-h1:text-primary-100 prose-h1:border-b prose-h1:pb-3 prose-h1:border-primary-100 dark:prose-h1:border-primary-900/50 prose-h2:text-lg prose-h2:text-primary-900 dark:prose-h2:text-primary-200 prose-h2:bg-primary-50/70 dark:prose-h2:bg-primary-900/20 prose-h2:p-3 prose-h2:rounded-xl prose-h2:border-l-4 prose-h2:border-primary-600 dark:prose-h2:border-primary-500 prose-h3:text-base prose-h3:text-slate-800 dark:prose-h3:text-slate-200 prose-table:border-collapse prose-table:w-full prose-th:bg-slate-100 dark:prose-th:bg-slate-800 prose-th:p-3 prose-th:text-slate-900 dark:prose-th:text-slate-100 prose-th:border prose-th:border-slate-300 dark:prose-th:border-slate-700 prose-td:p-3 prose-td:border prose-td:border-slate-200 dark:prose-td:border-slate-700 prose-td:text-slate-800 dark:prose-td:text-slate-300 prose-li:my-1 prose-ul:my-2 prose-blockquote:text-blue-900 prose-blockquote:font-bold prose-blockquote:bg-blue-50 prose-blockquote:border-l-4 prose-blockquote:border-blue-700 prose-blockquote:px-4 prose-blockquote:py-3 prose-blockquote:not-italic prose-blockquote:my-4 dark:prose-blockquote:bg-blue-900/30 dark:prose-blockquote:text-blue-100 dark:prose-blockquote:border-blue-500"
         >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{processedContent}</ReactMarkdown>
         </div>
       </div>
     </div>
